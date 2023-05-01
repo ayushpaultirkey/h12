@@ -2,12 +2,6 @@
 # H12
 H12 is a lightweight javascript front-end library inspired from ReactJS that allow using components which can use used around multiple places.
 
-# Installation
-Run the npm command to install H12
-````
-npm i h12
-````
-
 # Usage
 H12 Component can work in two ways:
 
