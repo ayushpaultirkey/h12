@@ -1,8 +1,4 @@
-import Component from "./component.js";
-import Method from "./method.js";
+const Serve = require("./src/serve");
+const Transpiler = require("./src/transpiler");
 
-const H12 = {};
-H12.Component = Component;
-H12.Method = Method;
-
-export default H12;
+module.exports = { Serve, Transpiler };

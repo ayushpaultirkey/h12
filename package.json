@@ -11,12 +11,22 @@
         "url": "git+https://github.com/ayushpaultirkey/h12.git"
     },
     "keywords": [
-        "javascript", "html"
+        "javascript",
+        "html"
     ],
     "author": "ayushpaultirkey",
     "license": "ISC",
     "bugs": {
         "url": "https://github.com/ayushpaultirkey/h12/issues"
     },
-    "homepage": "https://github.com/ayushpaultirkey/h12#readme"
+    "homepage": "https://github.com/ayushpaultirkey/h12#readme",
+    "dependencies": {
+        "express": "^4.18.2",
+        "fs-extra": "^11.1.1",
+        "jsdom": "^21.1.1",
+        "mime": "^3.0.0",
+        "nodemon": "^2.0.22",
+        "terser": "^5.17.1"
+    },
+    "bin": "./bin/index.js"
 }
