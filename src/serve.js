@@ -38,14 +38,29 @@ const __express = (request, response, _path, _config = { packed: false, hotreloa
             };
 
         };
-        if(typeof(_config.hotreload) !== "undefined" && _config.hotreload) {
+        /*if(typeof(_config.hotreload) !== "undefined" && _config.hotreload) {
             if(_extension.toLowerCase() == ".html") {
                 _data = _data.toString();
                 _data += `
-                    <script src="/@h12/hotreload.js"></script>
+                    <script>
+                    function RegisterSSE() {
+                        const _event = new EventSource("/@hotreload");
+                        _event.onerror = function() {
+                            console.log("H12: Error => Hot reload connection error");
+                            window.location.href = window.location.href;
+                        }
+                        _event.onopen = function() {
+                            console.log("H12: Success => Hot reload connection found");
+                        }
+                        _event.onmessage = function() {
+                            console.log("H12: Success => Hot reload message fetched");
+                        }
+                    }
+                    RegisterSSE();
+                    </script>
                 `;
             }
-        }
+        }*/
 
         //
         const _content_type = mime.getType(_url);
