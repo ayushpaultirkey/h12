@@ -10,6 +10,7 @@ const { Serve } = require("h12");
 
 //
 app.use("/public", Serve(__dirname, "./public").Express);
+app.use("/@h12", express.static("./public/library/h12"));
 
 
 //

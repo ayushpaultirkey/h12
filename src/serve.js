@@ -4,7 +4,7 @@ const mime = require("mime");
 const Transpiler = require("./transpiler");
 
 //
-function Serve(_path = "", _config = { packed: false }) {
+function Serve(_path = "", _config = { packed: false, hotreload: true }) {
     
     return {
         Express: function(_req, _res) {
@@ -15,7 +15,7 @@ function Serve(_path = "", _config = { packed: false }) {
 };
 
 //
-const __express = (request, response, _path, _config = { packed: false }) => {
+const __express = (request, response, _path, _config = { packed: false, hotreload: true }) => {
 
     //Get url and remove /@ from baseurl and check if url is file
     const _url = path.join(_path, request.url);
@@ -38,6 +38,14 @@ const __express = (request, response, _path, _config = { packed: false }) => {
             };
 
         };
+        if(typeof(_config.hotreload) !== "undefined" && _config.hotreload) {
+            if(_extension.toLowerCase() == ".html") {
+                _data = _data.toString();
+                _data += `
+                    <script src="/@h12/hotreload.js"></script>
+                `;
+            }
+        }
 
         //
         const _content_type = mime.getType(_url);
