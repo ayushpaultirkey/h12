@@ -1,6 +1,6 @@
 {
     "name": "h12",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "A lightweight javascript front-end library that allow using components which can use used around multiple places.",
     "main": "index.js",
     "scripts": {
