@@ -1,11 +1,22 @@
 {
-  "name": "h12",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "ayushpaultirkey",
-  "license": "ISC"
+    "name": "h12",
+    "version": "1.0.0",
+    "description": "A lightweight javascript front-end library that allow using components which can use used around multiple places.",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ayushpaultirkey/h12.git"
+    },
+    "keywords": [
+        "javascript", "html"
+    ],
+    "author": "ayushpaultirkey",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/ayushpaultirkey/h12/issues"
+    },
+    "homepage": "https://github.com/ayushpaultirkey/h12#readme"
 }
