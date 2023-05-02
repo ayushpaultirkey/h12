@@ -22,6 +22,31 @@ function Create() {
     //
     try {
         fsExtra.copySync(path.join(__dirname, "./../template"), _root);
+
+        const _package = fs.readFileSync(path.join(_root, "package.json"));
+        const _json = JSON.parse(_package.toString());
+
+        //
+        if(typeof(_json.scripts) == "undefined") {
+            _json.scripts = {};
+        };
+
+        //
+        if(typeof(_json.scripts.start) !== "undefined") {
+            _json.scripts.start_old = _json.scripts.start;
+        };
+        _json.scripts.start = "npx nodemon ./app.js";
+
+        //
+        if(typeof(_json.nodemonConfig) == "undefined") {
+            _json.nodemonConfig = {};
+        };
+        _json.nodemonConfig.ext = "js,css,html,json";
+
+        //
+        fs.writeFileSync(path.join(_root, "package.json"), JSON.stringify(_json));
+
+        //
         console.log("H12: Success\y=> Project created, use 'npm start' to start the server.");
     }
     catch(ex) {
