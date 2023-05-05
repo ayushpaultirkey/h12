@@ -6,16 +6,24 @@ class App extends Component {
         super();
     }
     init() {
-
+        this.count = 0;
+        this.Set("{add}", this.add);
+        this.Set("{count}", this.count);
     }
     render() {
 
-        return ([
+        return (
             <div>
-                <label>Hello world</label>
+                <label>Counter: {count}</label>
+                <br />
+                <button onclick="{add}">Add</button>
             </div>
-        ]);
+        );
 
+    }
+    add() { 
+        this.count++;
+        this.Set("{count}", this.count);
     }
 }
 

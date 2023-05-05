@@ -38,14 +38,13 @@ const __express = (request, response, _path, _config = { packed: false, hotreloa
             };
 
         };
+
         if(typeof(_config.hotreload) !== "undefined" && _config.hotreload) {
             if(_extension.toLowerCase() == ".html") {
                 _data = _data.toString();
-                _data += `
-                    <script src="/@h12/hotreload.js"></script>
-                `;
-            }
-        }
+                _data += `<script src="/@h12/hotreload.js"></script>`;
+            };
+        };
 
         //
         const _content_type = mime.getType(_url);

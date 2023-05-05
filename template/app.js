@@ -5,11 +5,11 @@ const app = express();
 const server = http.createServer(app);
 
 const { Serve } = require("h12");
-
+//const { Serve } = require("./../index");
 
 //
 app.use("/public", Serve(path.join(__dirname, "./public")).Express);
-app.use("/@h12", express.static("./public/library/h12"));
+app.use("/@h12", express.static(path.join(__dirname, "./public/library/h12")));
 
 //
 app.use("/@hotreload", function(req, res) {
@@ -36,7 +36,7 @@ app.use("/@hotreload", function(req, res) {
 
 
 //
-server.listen(process.env.PORT || 3000, () => {
+server.listen(3000, () => {
     console.log("Server Started at port 3000");
     console.log("http://localhost:3000/");
 });

@@ -1,13 +1,17 @@
+"use strict"
 import Method from "./method.js";
 
 class Component {
 
     constructor() {
+        this.id = `comp-${crypto.randomUUID()}`;
         this.binding = { "@element": [], "@default": null };
         this.document = null;
         this.template = "";
         this.packed = false;
         this.rendered = false;
+        this.child = {};
+        this.parent = {};
     };
 
     __build_rebind() {
@@ -80,103 +84,118 @@ class Component {
         const _child = _parsed.querySelectorAll("body *");
 
         //
-        _child.forEach(x => {
+        for(var i = 0, ilen = _child.length; i < ilen; i++) {
 
-            if(x.outerHTML.includes("{")) {
+            const _element = _child[i];
+            if(_element.outerHTML.indexOf("{") == -1) {
+                continue;
+            };
 
-                //Create unique id
-                const _uid =  `uid-${crypto.randomUUID()}`;
+            //
+            let _inner = _element.innerHTML;
+            let _outer = _element.outerHTML.replace(`>${_inner}<`, "><");
+            const _attribute = _element.getAttributeNames();
 
-                //
-                const _outer = x.outerHTML.replace(x.innerHTML, "");
-                const _outer_match = _outer.matchAll(/(\S+)=["]?((?:.(?!["]?\s+(?:\S+)=|[>"]))+.)["]?/gm);
+            //
+            const _uid =  `uid-${crypto.randomUUID()}`;
 
-                //
-                for(const _key of _outer_match) {
+            //
+            for(var j = 0, jlen = _attribute.length; j < jlen; j++) {
 
-                    const _variable = _key[2].match(/{.*?}/g);
-                    if(_variable !== null) {
+                if(_attribute[j].indexOf("{") !== -1) {
 
-                        //
-                        x.classList.add(_uid);
-
-                        //
-                        _key[2] += (_key[1] == "class") ? ` ${_uid}` : "";
-
-                        //
-                        if(!this.binding["@element"].includes(_uid)) {
-                            this.binding["@element"].push(_uid);
-                        };
-
-                        //
-                        let _tmp = [];
-
-                        //
-                        _variable.forEach(y => {
-
-                            if(!_tmp.includes(y) && typeof(this.binding[y]) !== "undefined") {
-                                const _count = _key[2].match(new RegExp(y, "g"));
-                                this.binding[y].element.push({ selector: _uid, type: 0, attribute: _key[1], count: (_count !== null) ? _count.length : 0 });
-                                _tmp.push(y);
-                            };
-
-                        });
-
+                    //
+                    if(!this.binding["@element"].includes(_uid)) {
+                        this.binding["@element"].push(_uid);
                     };
+
+                    _element.classList.add(_uid);
+                    this.binding[_attribute[j]].element.push({ selector: _uid, type: 2 });
 
                 };
 
+                const _value = _element.getAttribute(_attribute[j]);
+                
                 //
-                if(x.childElementCount == 0) {
+                if(_value.indexOf("{") !== -1) {
 
-                    //
-                    const _list = [];
-
-                    //
-                    const _inner_match = x.innerHTML.matchAll(/{.*?}/g);
-
-                    //
-                    for(const _key of _inner_match) {
-
-                        if(_key !== null) {
-
-                            //
-                            let _id = "";
-
-                            //
-                            if(_key.index > 2) {
-                                _id =  `uid-${crypto.randomUUID()}`;
-                                x.innerHTML = x.innerHTML.replace(_key, `<span class="${_id}">@${_list.length}</span>`);
-                                _list.push(_key[0]);
-                            }
-                            else {
-                                _id = _uid;
-                                x.classList.add(_uid);
-                            };
-
-                            //
-                            if(!this.binding["@element"].includes(_id)) {
-                                this.binding["@element"].push(_id);
-                            };
-
-                            //
-                            this.binding[_key].element.push({ selector: _id, type: 1 });
-
-                        };
-
-
+                    const _value_match = _value.match(/{\w+}/g);
+                    if(_value_match == null) {
+                        continue;
                     };
 
+                    //duplicate class {key} are removed
+                    //console.log(_element.outerHTML);
+                    _element.classList.add(_uid);
+                    //console.log(_element.outerHTML);
+
                     //
-                    for(var i = 0, l = _list.length; i < l; i++) {
-                        x.innerHTML = x.innerHTML.replace(`@${i}`, _list[i]);
+                    if(!this.binding["@element"].includes(_uid)) {
+                        this.binding["@element"].push(_uid);
+                    };
+
+
+                    //
+                    let _temp = [];
+
+                    for(var k = 0, klen = _value_match.length; k < klen; k++) {
+
+                        const _key = _value_match[k];
+
+                        if(!_temp.includes(_key) && typeof(this.binding[_key]) !== "undefined") {
+                            const _count = _value.match(new RegExp(_key, "g"));
+                            this.binding[_key].element.push({ selector: _uid, type: 1, attribute: _attribute[j], count: (_count !== null) ? _count.length : 0 });
+                            _temp.push(_key);
+                        };
+
                     };
 
                 };
 
             };
 
-        });
+            //
+            if(_element.childElementCount == 0) {
+
+                const _inner_match = _inner.match(/{\w+}/g);
+                            
+                if(_inner_match !== null) {
+
+                    //
+                    for(var j = 0, jlen = _inner_match.length; j < jlen; j++) {
+
+                        let _id = "";
+                        
+                        if(_inner.indexOf(" ") !== -1 || jlen > 1) {
+                            _id = `uid-${crypto.randomUUID()}`;
+                            _inner = _inner.replace(_inner_match[j], `<span class="${_id}">${_inner_match[j].replace("}", "-_-}")}</span>`);
+                        }
+                        else {
+                            _id = _uid;
+                            _element.classList.add(_id);
+                        };
+
+                        //
+                        if(!this.binding["@element"].includes(_id)) {
+                            this.binding["@element"].push(_id);
+                        };
+
+                        //
+                        this.binding[_inner_match[j]].element.push({ selector: _id, type: 0 });
+
+
+                    };
+                    _inner = _inner.replace(/-_-/g, "");
+
+
+                    _element.innerHTML = _inner;
+
+                };
+
+
+            };
+
+        };
 
         //
         console.warn(`H12.Component.__build_document(): ${this.constructor.name} component builded`);
@@ -184,21 +203,6 @@ class Component {
         //Set the new document
         this.document = _parsed;
 
-    };
-
-    async __render(_element = null) {
-
-        this.rendered = true;
-
-        if(_element !== null) {
-            document.querySelector(_element).cloneNode()
-            document.querySelector(_element).innerHTML = this.document.body.innerHTML;
-            return null;
-        }
-        else {
-            return this.document;
-        };
-        
     };
 
     async __init(_element = null, _argument = {}) {
@@ -219,11 +223,15 @@ class Component {
         await this.init(_argument);
         
         //
-        return this.__render(_element);
+        return this.document;
 
     };
 
     async init() {
+
+    };
+
+    async after() {
 
     };
 
@@ -274,101 +282,125 @@ class Component {
 
     Set(_key = "", _value = "") {
 
-        if(_key == "{*}") {
-            
-            const _bind = this.binding;
-            for(var _key in _bind) {
-                if(_key !== "@element" && _key !== "@default") {
-                    this.Set(_key, "");
-                };
-            };
-            return false;
-
-        };
-
-        if(_key.includes("++")) {
-            this.Append(_key, _value);
-            return false;
-        };
-
-        //
         const _bind = this.binding[_key];
         const _document = (!this.rendered) ? this.document : document;
 
         //
         if(typeof(_bind) !== "undefined") {
 
-            //
-            _bind.element.forEach(x => {
+            let _success = false;
+            const _node = _bind.element;
+            for(let i = 0, ilen = _node.length; i < ilen; i++) {
 
                 //
-                const _element = _document.querySelector(`.${x.selector}`);
+                const _element = _document.querySelector(`.${_node[i].selector}`);
+                
+                if(_node[i].type == 0) {
+                    
+                    _element.innerHTML = _value;
+                    _success = true;
 
-                //
-                if(x.type == 0) {
+                }
+                else if(_node[i].type == 2) {
+                    
+                    let _data = _element.getAttribute(_bind.data);
+                    _element.removeAttribute(_bind.data);
+
+                    if(_value.length !== 0) {
+                        _element.setAttribute(_value, (_data == null) ? "" : _data);
+                    };
+
+                    _success = true;
+
+                }
+                else if(_node[i].type == 1) {
 
                     //
-                    let _data = "";
+                    let _regex = "";
+                    let _attribute = _node[i].attribute;
+
+                    if(_attribute.indexOf("{") !== -1) {
+                        if(typeof(this.binding[_attribute]) !== "undefined") {
+                            _attribute = this.binding[_attribute].data;
+                        }
+                        else {
+                            continue;
+                        }
+                    };
+
+                    let _data = _element.getAttribute(_attribute);
+                    if(_data == null) {
+                        continue;
+                    };
+
+                    //
                     if(typeof(_value) === "function") {
 
                         //
-                        _data = _element.getAttribute(x.attribute);
-
-                        //
                         const _eid = `event-${crypto.randomUUID()}`;
-                        Method.List[_eid] = { event: _value.bind(this), element: x.selector };
+                        Method.List[_eid] = { event: _value.bind(this), element: _node[i].selector };
                         _value = `h12m.List[\"${_eid}\"].event();`;
-
-                        //
-                        for(var i = 0, len = x.count; i < len; i++) {
-
-                            const _match = _data.match(new RegExp(`^(?:.*?)(${_bind.data})`, "g"));
-                            if(_match !== null) {
-                                _data = _data.replace(_match[0], _match[0].replace(_bind.data, _value));
-                            };
-                            
-                        };
-
-
-                    }
-                    else {
-
-                        //
-                        _data = _element.getAttribute(x.attribute);
-
-                        //
-                        const _match_var = (!_bind.data.includes("{")) ? `(?:\\b)` : "";
-
-                        //
-                        for(var i = 0, len = x.count; i < len; i++) {
-
-                            const _match = _data.match(new RegExp(`^(?:.*?)${_match_var}(${_bind.data})${_match_var}`, "g"));
-                            if(_match !== null) {
-                                _data = _data.replace(_match[0], _match[0].replace(_bind.data, _value));
-                            };
-                            
-                        };
-
-                        _data = (_data.length == 0) ? _value : _data;
-
-                        if(x.attribute.toLowerCase() == "value") {
-                            _element.value = _data;
-                        };
 
                     };
 
                     //
-                    _element.setAttribute(x.attribute, _data);
+                    const _symbol_match = _bind.data.match(/[\W]/g);
+                    if(_bind.data.includes(" ") || _symbol_match !== null) {
+                        
+                        const _symbol = [ ...new Set(_symbol_match) ];
+                        let _fdata = _bind.data;
 
-                }
-                else if(x.type == 1) {
-                    _element.innerHTML = _value;
+                        //console.error(_fdata);
+                        //console.error(_symbol);
+
+                        _symbol.forEach(x => {
+                            if(x !== " ") {
+                                _fdata = _fdata.replace(new RegExp(x.replace(x, `\\${x}`), "g"), `\\${x}`);
+                            };
+                        });
+
+                        _regex = `^(.*?)(${_fdata})`;
+
+                        //console.error(_regex);
+                        //console.error(_fdata);
+
+                    }
+                    else {
+                        _regex = `^(.*?)(?:\\b)(${_bind.data})(?:\\b)`;
+                    };
+
+                    //console.warn("IN:", _regex, "FOR:", `"${_data}" USING: "${_bind.data}"`);
+
+                    //
+                    for(var j = 0, jlen = _node[i].count; j < jlen; j++) {
+
+
+                        //console.log("INDEX:", j, _bind.data);
+                        const _match = _data.matchAll(new RegExp(_regex, "g"));
+
+                        for(var _key of _match) {
+
+                            _data = _data.replace(_key[0], (_key[1] + _key[2].replace(_bind.data, _value)));
+                            //console.log(_data);
+
+                        };
+
+                    };
+                    
+                    //console.warn("OUT:", _data)
+
+                    //
+                    _element.setAttribute(_attribute, _data);
+
+                    _success = true;
+
                 };
 
-            });
+            };
 
-            //
-            _bind.data = _value;
+            if(_success) {
+                _bind.data = _value;  
+            };
 
         };
 
@@ -404,26 +436,46 @@ class Component {
 
 
 
-Component.Render = function(_template = null, _element = null, _argument = {}) {
+Component.Render = function(_template, _element = null, _argument = {}) {
 
-    document.querySelector(_element).insertAdjacentHTML("beforeend", _template);
+    document.querySelector(_element).insertAdjacentHTML("beforeend", _template.template);
+    _template.component.rendered = true;
+
+    const _child = _template.component.child;
+    for(var _k in _child) {
+        _child[_k].rendered = true;
+        _child[_k].after();
+    };
+    
+    _template.component.after();
 
 };
 
-Component.Create = async function(_component = null, _argument = {}) {
+Component.Create = async function(_component = null, _argument = {}, _parent = null) {
 
     let _response = "";
 
     try {
-        const _com = new _component();
-        _response = await _com.__init(null, _argument);
+        _component = new _component();
+
+        if(typeof(_argument.id) !== "undefined") {
+            _component.id = _argument.id;
+        };
+
+        if(_parent !== null && typeof(_parent) !== "undefined") {
+            _component.parent[_parent.id] = _parent;
+            _parent.child[_component.id] = _component;
+        };
+
+        _response = await _component.__init(null, _argument);
         _response = (_response == null) ? "" : _response.body.innerHTML;
+
     }
     catch(ex) {
         console.error(ex);
     };
 
-    return _response;
+    return { template: _response, component: _component};
 
 };
 
