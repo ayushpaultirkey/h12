@@ -7,8 +7,6 @@ const Transpiler = {};
 
 Transpiler.JIT = function(_string = "") {
 
-    console.log(_string)
-
     //Check if @Component is present
     if(_string.indexOf("@Component") == -1) {
         return _string;
@@ -33,22 +31,23 @@ Transpiler.JIT = function(_string = "") {
         if(_key[1].indexOf("<") !== -1 && _key[1].indexOf[">"] !== -1) {
 
             //
-            if(_key[1].indexOf("h12c.Create") !== -1) {
+            let _template = _key[1].replace("(", "");
+            if(_template.indexOf("h12c.Create") !== -1) {
 
-                const _match_function = _key[1].match(/\((await\s+|)h12c\.Create\(.*?\)\)\.template/gms);
+                const _match_function = _template.match(/\((await\s+|)h12c\.Create\(.*?\)\)\.template/gms);
                 for(var i = 0, ilen = _match_function.length; i < ilen; i++) {
 
-                    _string = _string.replace(_match_function[i], "${" + _match_function[i].replace("h12c", "-_-") + "}");
+                    _template = _template.replace(_match_function[i], "${" + _match_function[i].replace("h12c", "-_-") + "}");
 
                 };
 
                 //
-                _string = _string.replace(/-_-/g, "h12c");
+                _template = _template.replace(/-_-/g, "h12c");
 
             };
 
             //
-            let _template = _key[1].replace("(", "");
+            console.log(_template[1])
             _string = _string.replace(_key[1], "`" + _template.substring(0, _template.length - 1) + "`");
 
         };
