@@ -32,6 +32,23 @@ Transpiler.JIT = function(_string = "") {
 
             //
             let _template = _key[1].replace("(", "");
+
+            //Match all property
+            const _match_property = _template.match(/{(.*?)}/gm);
+            if(_match_property !== null) {
+
+                for(var i = 0, ilen = _match_property.length; i < ilen; i++) {
+
+                    if(_match_property[i].indexOf("...") !== -1 || _match_property[i].indexOf(":") !== -1) {
+                        console.log(_match_property[i])
+                        _template = _template.replace(_match_property[i], "${this.Property(" + _match_property[i] + ")}");
+                    };
+
+                };
+
+            };
+
+            //
             if(_template.indexOf("h12c.Create") !== -1) {
 
                 const _match_function = _template.match(/\((await\s+|)h12c\.Create\(.*?\)\)\.template/gms);

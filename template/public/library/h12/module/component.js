@@ -1,22 +1,5 @@
-"use strict";
-
-const Method = {};
-
-Method.List = {};
-
-Method.Flush = function() {
-
-    for(var item in this.List) {
-        
-        const _item = this.List[item];
-        const _element = document.querySelector(`.${_item.e}`);
-        if(_element == null) {
-            delete this.List[item];
-        };
-
-    };
-
-};
+"use strict"
+import Method from "./method.js";
 
 class Component {
 
@@ -518,7 +501,4 @@ Component.Create = async function(_component = null, _argument = {}, _parent = n
 
 window.h12c = Component;
 
-
-window.h12m = Method;
-
-export default { Component, Method };
+export default Component;
