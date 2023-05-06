@@ -1,4 +1,4 @@
-import H12 from "./../library/h12/component.min.js";
+import H12 from "./../library/h12/component.js";
 
 @Component
 class App extends H12.Component {
