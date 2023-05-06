@@ -10,10 +10,7 @@
         "type": "git",
         "url": "git+https://github.com/ayushpaultirkey/h12.git"
     },
-    "keywords": [
-        "javascript",
-        "html"
-    ],
+    "keywords": [ "javascript", "html", "web", "front-end", "components", "dom", "ui", "user-interface"],
     "author": "ayushpaultirkey",
     "license": "ISC",
     "bugs": {
