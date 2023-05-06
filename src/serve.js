@@ -5,13 +5,11 @@ const Transpiler = require("./transpiler");
 
 //
 function Serve(_path = "", _config = { packed: false, hotreload: true }) {
-    
     return {
         Express: function(_req, _res) {
             __express(_req, _res, _path, _config);
         }
     };
-
 };
 
 //

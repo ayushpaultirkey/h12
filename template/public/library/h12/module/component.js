@@ -1,5 +1,5 @@
 "use strict"
-import Method from "./method.js";
+import Method from "../method.js";
 
 class Component {
 
