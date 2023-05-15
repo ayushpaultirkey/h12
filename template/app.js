@@ -4,8 +4,8 @@ const express = require("express");
 const app = express();
 const server = http.createServer(app);
 
-const { Serve } = require("h12");
-//const { Serve } = require("./../index");
+//const { Serve } = require("h12");
+const { Serve } = require("./../index");
 
 app.use("/public", Serve(path.join(__dirname, "./public")).Express);
 app.use("/@h12", express.static(path.join(__dirname, "./public/library/h12")));
@@ -18,7 +18,7 @@ app.use("/@hotreload", function(req, res) {
     res.setHeader("Connection", "keep-alive");
     res.flushHeaders();
 
-    let _interval = setInterval(() => { res.write("Connected"); }, 1000);
+    let _interval = setInterval(() => { res.write("Connected"); }, 250);
 
     res.on("close", () => {
         clearInterval(_interval);

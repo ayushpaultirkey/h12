@@ -9,6 +9,17 @@ class Component {
         this.root = null;
     }
 
+    Unique(_unique = "", _object = {}) {
+
+        let _element = this.root.querySelectorAll(`[${_unique}]`);
+        _element.forEach(x => {
+            let _id = "x" + Math.random().toString(36).slice(6);
+            _object[x.getAttribute(_unique)] = _id;
+            x.setAttribute(_unique, _id);
+        });
+
+    }
+
     async init() { }
     async render() { return document.createElement("div"); }
 
@@ -27,11 +38,12 @@ class Component {
                 };
             };
 
+            _component.args = _value;
             _component.parent[this.id] = this;
 
             this.child[_component.id] = _component;
 
-            let _root = await _component._init();
+            let _root = await _component._init(null, _value);
             return _root;
         }
         else {
@@ -251,9 +263,9 @@ class Component {
         return (typeof(_bind) !== "undefined") ? _bind.value : null;
     }
 
-    async _init(_element = null) {
+    async _init(_element = null, _args = {}) {
         this.root = await this.render();
-        this.init();
+        this.init(_args);
         if(_element == null) {
             return this.root;
         };
