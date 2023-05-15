@@ -3,9 +3,9 @@
 
 
 # v1.0.7
-&bull; **Date: 05-May-2023**
+### Date: 05-May-2023
 
-#### Updated **/public/library/h12/component.js**
+#### Updated `/public/library/h12/component.js`
 
 &bull; Component.__render() function is removed, the rendering will be done using Component.Render() function.
 
