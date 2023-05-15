@@ -1,7 +1,7 @@
-import Component from "./../library/h12/module/component.js";
+import H12 from "./../library/h12.js";
 
 @Component
-class App extends Component {
+class App extends H12.Component {
     constructor() {
         super();
     }
@@ -19,4 +19,4 @@ class App extends Component {
     }
 }
 
-Component.Render(<App args />, ".app");
+H12.Component.Render(<App args />, ".app");
