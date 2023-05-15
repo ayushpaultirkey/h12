@@ -16,7 +16,6 @@ Method.Flush = function() {
 
 };
 
-
-window.h12m = Method;
+window.hxh = Method;
 
 export default Method;

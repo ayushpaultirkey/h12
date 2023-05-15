@@ -1,8 +1,6 @@
-//Get module path of the project
 const fs = require("fs");
 const path = require("path");
 const fsExtra = require("fs-extra");
-
 
 function Create() {
 
@@ -15,7 +13,7 @@ function Create() {
 
     //
     if(_root == "") {
-        console.log("H12: Error\t=> Unable to get the root folder of the project.");
+        console.log("\x1b[31mH12: Error\t=>\x1b[0m Unable to get the root folder of the project");
         return 0;
     };
 
@@ -47,13 +45,12 @@ function Create() {
         fs.writeFileSync(path.join(_root, "package.json"), JSON.stringify(_json));
 
         //
-        console.log("H12: Success\y=> Project created, use 'npm start' to start the server.");
+        console.log("\x1b[32mH12: Success\t=>\x1b[0m Project created, use \x1b[34m'npm start'\x1b[0m to start the server");
     }
     catch(ex) {
-        console.log("H12: Error\t=> Unable to create H12 project.");
+        console.log("\x1b[31mH12: Error\t=>\x1b[0m Unable to create H12 project");
         console.log(ex);
     };
-
 
 };
 

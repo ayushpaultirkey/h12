@@ -1,7 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-//const VComponent = require("./vcomponent");
-//const terser = require("terser");
+const jsdom = require("jsdom");
 
 const Transpiler = {};
 
@@ -19,69 +18,41 @@ Transpiler.JIT = function(_string = "") {
     const _match_tag = _string.matchAll(/<(\w+)\s+args(?:=|)(?:{{(.*?)}}|).*?\/>/gm);
     for(const _key of _match_tag) {
 
-        let _argument = (typeof(_key[2]) == "undefined") ? ", {}" : `, {${_key[2]}}`;
-        _string = _string.replace(_key[0], `(await h12c.Create(${_key[1]}${_argument}, this)).template`);
-
-    };
-    
-    //Get all brackets that have markup tags
-    const _match_bracket = _string.matchAll(/(\((?:[^)(]|\((?:[^)(]|\((?:[^)(]|\([^)(]*\))*\))*\))*\))/g);
-    for(var _key of _match_bracket) {
-
-        if(_key[1].indexOf("<") !== -1 && _key[1].indexOf[">"] !== -1) {
-
-            //
-            let _template = _key[1].replace("(", "");
-
-            //Match all property
-            const _match_property = _template.match(/{(.*?)}/gm);
-            if(_match_property !== null) {
-
-                for(var i = 0, ilen = _match_property.length; i < ilen; i++) {
-
-                    if(_match_property[i].indexOf("...") !== -1 || _match_property[i].indexOf(":") !== -1) {
-                        console.log(_match_property[i])
-                        _template = _template.replace(_match_property[i], "${this.Property(" + _match_property[i] + ")}");
-                    };
-
-                };
-
-            };
-
-            //
-            if(_template.indexOf("h12c.Create") !== -1) {
-
-                const _match_function = _template.match(/\((await\s+|)h12c\.Create\(.*?\)\)\.template/gms);
-                for(var i = 0, ilen = _match_function.length; i < ilen; i++) {
-
-                    _template = _template.replace(_match_function[i], "${" + _match_function[i].replace("h12c", "-_-") + "}");
-
-                };
-
-                //
-                _template = _template.replace(/-_-/g, "h12c");
-
-            };
-
-            //
-            console.log(_template[1])
-            _string = _string.replace(_key[1], "`" + _template.substring(0, _template.length - 1) + "`");
-
-        };
+        _string = _string.replace(_key[0], `<${_key[1]} hx-app="${_key[1]}" args="{${((typeof(_key[2]) !== "undefined")) ? _key[2].replace(/"/g, "'") : ""}}"></${_key[1]}>`);
         
     };
-    
-    //Get all Component.Render() function
-    if(_string.indexOf("Component.Render") !== -1) {
 
-        const _match_render = _string.match(/Component.Render(\((?:[^)(]|\((?:[^)(]|\((?:[^)(]|\([^)(]*\))*\))*\))*\))/gms);
+    //Match all template
+    const _match_bracket = _string.matchAll(/<>(.*?)<\/>/gs);
+    for(const _key of _match_bracket) {
+    
+        //
+        let _dom = new jsdom.JSDOM(_key[1]);
+        let _transpiled = this.DOMConstruct(_dom.window.document.body.children[0]);
+        _string = _string.replace(_key[0], _transpiled);
+    
+    };
+
+    //Match all dynamic tags
+    const _match_dyn = _string.matchAll(/<(\w+).*?args(?:=|)(?:.{(.*?)}.|)>.*?<\/\w+>/gm);
+    for(const _key of _match_dyn) {
+    
+        _string = _string.replace(_key[0], `await this._cx(${_key[1]}${((_key[2].length > 0) ? `, {${_key[2]}}` : "")})`);
+    
+    };
+
+    //Get all Render() function
+    if(_string.indexOf("Render") !== -1) {
+
+        const _match_render = _string.match(/Render(\((?:[^)(]|\((?:[^)(]|\((?:[^)(]|\([^)(]*\))*\))*\))*\))/gms);
         for(var i = 0, ilen = _match_render.length; i < ilen; i++) {
 
-            _string = _string.replace(_match_render[i], _match_render[i].replace(/this\)\)\.template/g, "this))"));
+            _string = _string.replace(_match_render[i], _match_render[i].replace(/await\s+this\._cx/g, ""));
 
         };
 
     };
+
     
     //
     return _string;
@@ -89,24 +60,82 @@ Transpiler.JIT = function(_string = "") {
 };
 
 
-Transpiler.JITPacked = function(_string = "") {
-    
-    //Check if @Component is present
-    if(!_string.includes("@Component")) {
-        return _string;
+Transpiler.DOMConstruct = function(_element) {
+
+    let _child_code = "";
+    let _child = _element.childNodes;
+
+    let _is_component = false;
+    let _name_component = "";
+
+    let _attribute_value = "{";
+    const _attribute = _element.getAttributeNames();
+    _attribute.forEach(x => {
+        let _value = _element.getAttribute(x);
+
+        if((_value.indexOf("...") !== -1 || _value.indexOf(":") !== -1) && _value.indexOf(";") == -1) {
+            _attribute_value += `"${x}":${_element.getAttribute(x)},`;
+        }
+        else {
+            if(x == "hx-app") {
+                _is_component = true;
+                _name_component = _element.getAttribute(x);
+            }
+            else {
+                _attribute_value += `"${x}":"${_element.getAttribute(x)}",`;
+            }
+        };
+        
+    });
+    _attribute_value += "}";
+    _attribute_value = _attribute_value.replace(",}", "}");
+    _attribute_value = ((_attribute_value == "{}") ? "" : "," + _attribute_value);
+
+    if(_is_component) {
+        return `await this._cx(${_name_component}${_attribute_value})`.replace(/,\]/g, "]");
     };
 
     //
-    /*
-    const _vcomponent = new VComponent();
-    _vcomponent.script = _string;
-    _vcomponent.__build_template();
-    _vcomponent.__build_binding();
-    _vcomponent.__build_document();
-    */
+    for(var i = 0, ilen = _child.length; i < ilen; i++) {
+
+        if(_child[i].nodeType == 3) {
+            if(_child[i].nodeValue.match(/\w+/g) !== null) {
+
+                let _value = _child[i].nodeValue.replace(/\n|\s\s/g, "");
+                let _test = "";
+
+                if(_value.indexOf("{") !== -1) {
+                    let _split = _value.split(/{.*?}/g);
+                    let _match = _value.match(/{.*?}/g);
+
+                    for(var j = 0, jlen = _split.length; j < jlen; j++) {
+
+                        if(_split[j] !== "") {
+                            _test += `this._nx("t",\`${_split[j]}\`),`;
+                        };
+                        _test += ((typeof(_match[j]) !== "undefined") ? `this._nx("t",\`${_match[j]}\`),` : "");
+
+                    };
+                }
+                else {
+                    _test += `this._nx("t",\`${_child[i].nodeValue}\`),`;
+                };
+
+                _child_code += _test;
+                
+            };
+        }
+        else {
+            _child_code += this.DOMConstruct(_child[i]) + ",";
+        };
+
+    };
 
     //
-    return this.JIT(_vcomponent.__pack());
+    let _code = `this._nx("${_element.tagName.toLowerCase()}",[${_child_code}]${_attribute_value})`;
+    
+    //
+    return _code.replace(/,\]/g, "]");
 
 };
 

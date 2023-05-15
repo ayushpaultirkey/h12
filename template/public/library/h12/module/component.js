@@ -1,504 +1,300 @@
-"use strict"
-import Method from "../method.js";
+import Method from "./method.js";
 
 class Component {
-
     constructor() {
-        this.id = `comp-${crypto.randomUUID()}`;
-        this.binding = { "@element": [], "@default": null };
-        this.document = null;
-        this.template = "";
-        this.packed = false;
-        this.rendered = false;
-        this.child = {};
+        this.id = `c-${crypto.randomUUID()}`;
         this.parent = {};
-    };
+        this.child = {};
+        this.binding = { "@element": {} };
+        this.root = null;
+    }
 
-    __build_rebind() {
+    async init() { }
+    async render() { return document.createElement("div"); }
 
-        let _binding = JSON.stringify(this.binding);
-        let _element = this.binding["@element"];
-        let _template = this.template;
-
-        //
-        _element.forEach(x => {
-
-            const _id = `uid-${crypto.randomUUID()}`
-            _binding = _binding.replace(new RegExp(x, "g"), _id);
-            _template = _template.replace(new RegExp(x, "g"), _id);
-
-        });
+    async _cx(_node = null, _value = "") {
 
         //
-        this.binding = JSON.parse(_binding);
-        this.template = _template;
+        if(_node instanceof Object) {
 
-    };
+            const _component = new _node();
 
-    __build_packed() {
+            if(_value instanceof Object) {
+                _value = (typeof(_value["args"]) !== "undefined") ? _value["args"] : _value;
 
-        //
-        if(this.packed) {
-            this.__build_rebind();
-            const _dom = new DOMParser();
-            this.document = _dom.parseFromString(this.template, "text/html");
-            console.warn(`H12.Component.__build_packed(): ${this.constructor.name} component pack loaded with remapped binding`);
-        };
-
-    };
-
-    __build_binding(_template = "") {
-        
-        //
-        const _match = _template.matchAll(/{.*?}/g);
-        for(const _key of _match) {
-
-            //
-            if(typeof(this.binding[_key[0]]) === "undefined") {
-
-                //
-                this.binding[_key[0]] = { data: _key[0], element: [] };
-
-            };
-
-        };
-
-    };
-
-    __build_template(_template = "") {
-
-        //If document is null then build template and set the
-        //template to body.innerHTML
-        if(this.document == null) {
-            this.__build_document(_template);
-        };
-
-        this.template = this.document.body.innerHTML;
-
-    };
-
-    __build_document(_template = "") {
-
-        const _dom = new DOMParser();
-        const _parsed = _dom.parseFromString(_template, "text/html");
-        const _child = _parsed.querySelectorAll("body *");
-
-        //
-        for(var i = 0, ilen = _child.length; i < ilen; i++) {
-
-            const _element = _child[i];
-            if(_element.outerHTML.indexOf("{") == -1) {
-                continue;
-            };
-
-            //
-            let _inner = _element.innerHTML;
-            let _outer = _element.outerHTML.replace(`>${_inner}<`, "><");
-            const _attribute = _element.getAttributeNames();
-
-            //
-            const _uid =  `uid-${crypto.randomUUID()}`;
-
-            //
-            for(var j = 0, jlen = _attribute.length; j < jlen; j++) {
-
-                if(_attribute[j].indexOf("{") !== -1) {
-
-                    //
-                    if(!this.binding["@element"].includes(_uid)) {
-                        this.binding["@element"].push(_uid);
-                    };
-
-                    _element.classList.add(_uid);
-                    this.binding[_attribute[j]].element.push({ selector: _uid, type: 2 });
-
+                if(typeof(_value["id"]) !== "undefined") {
+                    _component.id = _value["id"];
                 };
-
-                const _value = _element.getAttribute(_attribute[j]);
-                
-                //
-                if(_value.indexOf("{") !== -1) {
-
-                    const _value_match = _value.match(/{\w+}/g);
-                    if(_value_match == null) {
-                        continue;
-                    };
-
-                    //duplicate class {key} are removed
-                    //console.log(_element.outerHTML);
-                    _element.classList.add(_uid);
-                    //console.log(_element.outerHTML);
-
-                    //
-                    if(!this.binding["@element"].includes(_uid)) {
-                        this.binding["@element"].push(_uid);
-                    };
-
-
-                    //
-                    let _temp = [];
-
-                    for(var k = 0, klen = _value_match.length; k < klen; k++) {
-
-                        const _key = _value_match[k];
-
-                        if(!_temp.includes(_key) && typeof(this.binding[_key]) !== "undefined") {
-                            const _count = _value.match(new RegExp(_key, "g"));
-                            this.binding[_key].element.push({ selector: _uid, type: 1, attribute: _attribute[j], count: (_count !== null) ? _count.length : 0 });
-                            _temp.push(_key);
-                        };
-
-                    };
-
-                };
-
             };
 
-            //
-            if(_element.childElementCount == 0) {
+            _component.parent[this.id] = this;
 
-                const _inner_match = _inner.match(/{\w+}/g);
-                            
-                if(_inner_match !== null) {
+            this.child[_component.id] = _component;
 
-                    //
-                    for(var j = 0, jlen = _inner_match.length; j < jlen; j++) {
-
-                        let _id = "";
-                        
-                        if(_inner.indexOf(" ") !== -1 || jlen > 1) {
-                            _id = `uid-${crypto.randomUUID()}`;
-                            _inner = _inner.replace(_inner_match[j], `<span class="${_id}">${_inner_match[j].replace("}", "-_-}")}</span>`);
-                        }
-                        else {
-                            _id = _uid;
-                            _element.classList.add(_id);
-                        };
-
-                        //
-                        if(!this.binding["@element"].includes(_id)) {
-                            this.binding["@element"].push(_id);
-                        };
-
-                        //
-                        this.binding[_inner_match[j]].element.push({ selector: _id, type: 0 });
-
-
-                    };
-                    _inner = _inner.replace(/-_-/g, "");
-
-
-                    _element.innerHTML = _inner;
-
-                };
-
-
-            };
-
+            let _root = await _component._init();
+            return _root;
+        }
+        else {
+            return document.createTextNode("");
         };
 
-        //
-        console.warn(`H12.Component.__build_document(): ${this.constructor.name} component builded`);
+    }
 
-        //Set the new document
-        this.document = _parsed;
-
-    };
-
-    async __init(_element = null, _argument = {}) {
+    _nx(_node = null, _value = "", _property = {}) {
 
         //
-        if(!this.packed) {
+        let _root;
+        let _id = "x" + Math.random().toString(36).slice(6);
 
-            const _render = await this.render();
-            this.__build_binding(_render);
-            this.__build_template(_render);
+        //If text
+        if(_node === "t") {
+
+            if(_value.indexOf("{") == -1) {
+                _root = document.createTextNode(_value);
+            }
+            else {
+                _root = document.createElement("span");
+                _root.innerText = _value;
+                _root.classList.add(`${_id}`)
+                this._bind(_value, `.${_id}`, 2);
+            };
 
         }
         else {
-            this.__build_packed();
-        };
 
-        //
-        await this.init(_argument);
-        
-        //
-        return this.document;
-
-    };
-
-    async init() {
-
-    };
-
-    async after() {
-
-    };
-
-    async render() {
-        return "";
-    };
-
-    Unique(_key = "", _object = {}) {
-
-        //
-        const _child = this.document.querySelectorAll(`[${_key}]`);
-        
-        //
-        _child.forEach(x => {
-
-            const _id = `id-${crypto.randomUUID()}`;
-
-            _object[x.getAttribute(_key)] = _id;
-            x.id = _id;
-
-        });
-
-    };
-
-    Append(_key = "", _value = "") {
-
-        //
-        const _bind = this.binding[_key.replace("++", "")];
-        const _document = (!this.rendered) ? this.document : document;
-        const _position = (_key.includes("++")) ? (_key.indexOf("++") == 0) ? "afterbegin" : "beforeend" : "";
-
-        //
-        if(typeof(_bind) !== "undefined") {
+            //
+            _root = document.createElement(_node);
+            let _unique = false;
             
-            _bind.element.forEach(x => {
+            //
+            if(_property instanceof Object) {
+                for(const _key in _property) {
+    
+                    //
+                    let _key_value = _property[_key];
 
-                const _element = _document.querySelector(`.${x.selector}`);
-                if(x.type == 1) {
-                    _element.insertAdjacentHTML(_position, _value);
+                    //
+                    if(_key_value instanceof Object) {
+                        for(const _vkey in _property[_key]) {
+
+                            //
+                            let _name = _vkey;
+                            let _attribute = _key_value[_vkey];
+                            
+                            //
+                            if(isNumeric(_vkey) && _attribute instanceof Array) {
+
+                                let _join = ((_attribute.join("").includes(":")) ? ";" : "");
+                                _attribute = _attribute.join(_join) + _join;
+                                _name = _key;
+
+                            };
+
+                            //
+                            _attribute = _attribute.toString();
+                            
+                            //
+                            bindAttribute.bind(this)(_attribute, _name, _id);
+                            
+                            //
+                            if(_attribute.indexOf("{") !== -1) {
+                                _unique = true;
+                            };
+
+                            _root.setAttribute(_name, _attribute);
+
+                        };
+                        continue;
+                    };
+
+                    //
+                    _root.setAttribute(_key, _key_value);
+                    if(_key_value.indexOf("{") !== -1) {
+    
+                        //
+                        _unique = true;
+    
+                        //
+                        bindAttribute.bind(this)(_key_value.toString(), _key, _id);
+    
+                    };
+
                 };
+            };
 
+            //
+            if(_unique) {
+                _root.classList.add(`${_id}`);
+            };
+
+            //
+            _value.forEach(x => {
+                _root.appendChild(x);
             });
 
         };
 
+        //
+        return _root;
 
-    };
+    }
+
+    _bind(_key, _node, _type, _object = {}) {
+        if(typeof(this.binding[_key]) == "undefined") {
+            this.binding[_key] = { value: _key, element: [] };
+        };
+        if(typeof(this.binding["@element"][_node]) == "undefined") {
+            this.binding["@element"][_node] = {};
+        };
+        if(_type == 1) {
+            if(_object.attribute == "class") {
+                _object.data += ` ${_node.replace(/\./g, "")}`;
+            };
+            if(typeof(this.binding["@element"][_node][_object.attribute]) == "undefined") {
+                this.binding["@element"][_node][_object.attribute] = {};
+                this.binding["@element"][_node][_object.attribute]["@value"] = _object.data;
+                this.binding["@element"][_node][_object.attribute]["@key"] = [];
+            };
+            this.binding["@element"][_node][_object.attribute]["@key"].push(_key);
+            delete _object.data;
+        };
+        //this.binding[_key].element.push({ type: _type, node: _node, ... _object });
+        this.binding[_key].element.push({ type: _type, node: _node, ... _object });
+    }
 
     Set(_key = "", _value = "") {
 
-        const _bind = this.binding[_key];
-        const _document = (!this.rendered) ? this.document : document;
-
-        //
+        let _bind = this.binding[_key.replace("++", "")];
         if(typeof(_bind) !== "undefined") {
 
-            let _success = false;
-            const _node = _bind.element;
-            for(let i = 0, ilen = _node.length; i < ilen; i++) {
+            let _element = _bind.element;
+            for(var i = 0, ilen = _element.length; i < ilen; i++) {
 
-                //
-                const _element = _document.querySelector(`.${_node[i].selector}`);
-                
-                if(_node[i].type == 0) {
-                    
-                    _element.innerHTML = _value;
-                    _success = true;
+                const _item = _element[i];
+                if(_item.type == 1) {
 
-                }
-                else if(_node[i].type == 2) {
-                    
-                    let _data = _element.getAttribute(_bind.data);
-                    _element.removeAttribute(_bind.data);
+                    let _node = _item.node;
+                    let _attribute = this.binding["@element"][_node];
+                    let _is_root = this.root.classList.contains(_node.replace(".", ""));
 
-                    if(_value.length !== 0) {
-                        _element.setAttribute(_value, (_data == null) ? "" : _data);
+                    if(typeof(_attribute) == "undefined" || typeof(_attribute[_item.attribute]) == "undefined" || this.root.querySelector(_node) == null) {
+                        if(!_is_root) {
+                            continue;
+                        };
                     };
 
-                    _success = true;
-
-                }
-                else if(_node[i].type == 1) {
+                    let _avalue = _attribute[_item.attribute]["@value"];
+                    let _akey = _attribute[_item.attribute]["@key"];
 
                     //
-                    let _regex = "";
-                    let _attribute = _node[i].attribute;
+                    if(typeof(_value) === "function") { 
 
-                    if(_attribute.indexOf("{") !== -1) {
-                        if(typeof(this.binding[_attribute]) !== "undefined") {
-                            _attribute = this.binding[_attribute].data;
-                        }
-                        else {
-                            continue;
-                        }
+                        const _eid = `event-${crypto.randomUUID()}`;
+                        Method.List[_eid] = { event: _value.bind(this), element: _node[i].selector };
+                        _value = `hxh.List[\"${_eid}\"].event();`;
+
                     };
+                    _avalue = _avalue.replace(new RegExp(_key, "g"), _value);
 
-                    let _data = _element.getAttribute(_attribute);
-                    if(_data == null) {
+                    //
+                    _akey.forEach(x => {
+                        _avalue = _avalue.replace(new RegExp(x, "g"), this.binding[x].value);
+                    });
+
+                    //
+                    if(_is_root) {
+                        this.root.setAttribute(_item.attribute, _avalue);
+                    }
+                    else {
+                        this.root.querySelector(_node).setAttribute(_item.attribute, _avalue);
+                    }
+
+                }
+                else if(_item.type == 2) {
+                    let _node = this.root.querySelector(_item.node);
+                    if(_node == null) {
                         continue;
                     };
 
-                    //
-                    if(typeof(_value) === "function") {
-
-                        //
-                        const _eid = `event-${crypto.randomUUID()}`;
-                        Method.List[_eid] = { event: _value.bind(this), element: _node[i].selector };
-                        _value = `h12m.List[\"${_eid}\"].event();`;
-
-                    };
-                    
-                    if(typeof(_value) === "number") {
-                        _value = _value.toString();
-                    };
-
-                    //
-                    const _symbol_match = _bind.data.match(/[\W]/g);
-                    if(_bind.data.includes(" ") || _symbol_match !== null) {
-                        
-                        const _symbol = [ ...new Set(_symbol_match) ];
-                        let _fdata = _bind.data;
-
-                        //console.error(_fdata);
-                        //console.error(_symbol);
-
-                        _symbol.forEach(x => {
-                            if(x !== " ") {
-                                _fdata = _fdata.replace(new RegExp(x.replace(x, `\\${x}`), "g"), `\\${x}`);
+                    if(_value instanceof Element) {
+                        if(_key.indexOf("++") !== -1) {
+                            if(_key.indexOf("++") == 0) {
+                                _node.insertAdjacentElement("afterbegin", _value);
+                            }
+                            else {
+                                _node.appendChild(_value);
                             };
-                        });
-
-                        _regex = `^(.*?)(${_fdata})`;
-
-                        //console.error(_regex);
-                        //console.error(_fdata);
-
+                        }
+                        else {
+                            _node.childNodes.forEach(x => x.remove());
+                            _node.appendChild(_value);
+                        };
+                        _value = _value.outerHTML;
                     }
                     else {
-                        _regex = `^(.*?)(?:\\b)(${_bind.data})(?:\\b)`;
+                        _node.innerHTML = _value;
                     };
-
-                    //console.warn("IN:", _regex, "FOR:", `"${_data}" USING: "${_bind.data}"`);
-
-                    //
-                    for(var j = 0, jlen = _node[i].count; j < jlen; j++) {
-
-
-                        //console.log("INDEX:", j, _bind.data);
-                        const _match = _data.matchAll(new RegExp(_regex, "g"));
-
-                        for(var _key of _match) {
-
-                            _data = _data.replace(_key[0], (_key[1] + _key[2].replace(_bind.data, _value)));
-                            //console.log(_data);
-
-                        };
-
-                    };
-                    
-                    //console.warn("OUT:", _data)
-
-                    //
-                    _element.setAttribute(_attribute, _data);
-
-                    _success = true;
 
                 };
 
             };
 
-            if(_success) {
-                _bind.data = _value;  
-            };
+            //
+            _bind.value = _value;
 
         };
-
-    };
-
-    Get(_key = "") {
-
-        const _bind = this.binding[_key];
-        const _document = (!this.rendered) ? this.document : document;
-
-        if(typeof(_bind) !== "undefined") {
-
-            const _element = this.binding[_key].element;
-            let _data = _bind.data;
-
-            for(var i = 0, len = _element.length; i < len; i++) {
-
-                if(_element[i].type == 0 && typeof(_element[i].attribute) !== "undefined" && _element[i].attribute == "value") {
-                    _data = _document.querySelector(`.${_element[i].selector}`).value;
-                    break;
-                };
-
-            };
-
-            return _data;
-        };
-
-        return null;
-
-    };
-
-    Property(_object = {}) {
-        let _string = ``;
-        for(var _key in _object) {
-            _string += ` ${_key}="${_object[_key]}" `;
-        };
-        return _string;
-    };
-
-    Style(_object = {}) {
-        let _string = ``;
-        for(var _key in _object) {
-            _string += `${_key}: ${_object[_key]};`;
-        };
-        return _string;
-    };
-
-};
-
-
-
-Component.Render = function(_template, _element = null, _argument = {}) {
-
-    document.querySelector(_element).insertAdjacentHTML("beforeend", _template.template);
-    _template.component.rendered = true;
-
-    const _child = _template.component.child;
-    for(var _k in _child) {
-        _child[_k].rendered = true;
-        _child[_k].after();
-    };
-    
-    _template.component.after();
-
-};
-
-Component.Create = async function(_component = null, _argument = {}, _parent = null) {
-
-    let _response = "";
-
-    try {
-        _component = new _component();
-
-        if(typeof(_argument.id) !== "undefined") {
-            _component.id = _argument.id;
-        };
-
-        if(_parent !== null && typeof(_parent) !== "undefined") {
-            _component.parent[_parent.id] = _parent;
-            _parent.child[_component.id] = _component;
-        };
-
-        _response = await _component.__init(null, _argument);
-        _response = (_response == null) ? "" : _response.body.innerHTML;
 
     }
-    catch(ex) {
-        console.error(ex);
-    };
 
-    return { template: _response, component: _component};
+    Get(_key) {
+        let _bind = this.binding[_key];
+        return (typeof(_bind) !== "undefined") ? _bind.value : null;
+    }
+
+    async _init(_element = null) {
+        this.root = await this.render();
+        this.init();
+        if(_element == null) {
+            return this.root;
+        };
+        document.querySelector(_element).appendChild(this.root);
+    }
+
+}
+
+function isNumeric(str) {
+    if (typeof str != "string") return false
+    return !isNaN(str) && !isNaN(parseFloat(str))
+};
+
+function bindAttribute(_value, _attribute, _id) {
+
+    let _match = _value.match(/{\w\S+?}/gm);
+    if(_match !== null) {
+
+        let _temp = [];
+
+        _match.forEach(x => {
+
+            if(!_temp.includes(x)) {
+                this._bind(x, `.${_id}`, 1, { data: _value, attribute: _attribute });
+                _temp.push(x);
+            };
+
+        });
+
+    };
 
 };
 
-window.h12c = Component;
+
+Component.Render = async function(_component = null, _element = "") {
+
+    const _c = new _component();
+    await _c._init(_element);
+
+};
+
+window.hxc = Component;
 
 export default Component;

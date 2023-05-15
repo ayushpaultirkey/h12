@@ -1,30 +1,22 @@
-import H12 from "./../library/h12.js";
+import Component from "./../library/h12/module/component.js";
 
 @Component
-class App extends H12.Component {
+class App extends Component {
     constructor() {
         super();
     }
-    init() {
-        this.count = 0;
-        this.Set("{add}", this.add);
-        this.Set("{count}", this.count);
-    }
-    render() {
+    async init() {
 
-        return (
+    }
+    async render() {
+
+        return <>
             <div>
-                <label>Counter: {count}</label>
-                <br />
-                <button onclick="{add}">Add</button>
+                <label onclick="{click}">Hello World</label>
             </div>
-        );
+        </>;
 
-    }
-    add() { 
-        this.count++;
-        this.Set("{count}", this.count);
     }
 }
 
-H12.Component.Render(<App args />, ".app");
+Component.Render(<App args />, ".app");
