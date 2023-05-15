@@ -12,7 +12,7 @@ class App extends Component {
 
         return <>
             <div>
-                <label onclick="{click}">Hello World</label>
+                <label>Hello World</label>
             </div>
         </>;
 
