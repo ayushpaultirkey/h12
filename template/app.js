@@ -4,8 +4,8 @@ const express = require("express");
 const app = express();
 const server = http.createServer(app);
 
-//const { Serve } = require("h12");
-const { Serve } = require("./../index");
+const { Serve } = require("h12");
+//const { Serve } = require("./../index");
 
 app.use("/public", Serve(path.join(__dirname, "./public")).Express);
 app.use("/@h12", express.static(path.join(__dirname, "./public/library/h12")));
