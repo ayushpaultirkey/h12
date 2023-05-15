@@ -6,7 +6,7 @@ class App extends H12.Component {
         super();
     }
     async init() {
-
+        
     }
     async render() {
 

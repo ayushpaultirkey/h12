@@ -1,4 +1,6 @@
-import Method from "./method.js";
+const Method = {};
+
+Method.List = {};
 
 class Component {
     constructor() {
@@ -92,7 +94,7 @@ class Component {
                             let _attribute = _key_value[_vkey];
                             
                             //
-                            if(isNumeric(_vkey) && _attribute instanceof Array) {
+                            if(_isn(_vkey) && _attribute instanceof Array) {
 
                                 let _join = ((_attribute.join("").includes(":")) ? ";" : "");
                                 _attribute = _attribute.join(_join) + _join;
@@ -104,7 +106,7 @@ class Component {
                             _attribute = _attribute.toString();
                             
                             //
-                            bindAttribute.bind(this)(_attribute, _name, _id);
+                            _axb.bind(this)(_attribute, _name, _id);
                             
                             //
                             if(_attribute.indexOf("{") !== -1) {
@@ -125,7 +127,7 @@ class Component {
                         _unique = true;
     
                         //
-                        bindAttribute.bind(this)(_key_value.toString(), _key, _id);
+                        _axb.bind(this)(_key_value.toString(), _key, _id);
     
                     };
 
@@ -278,12 +280,12 @@ class Component {
 
 }
 
-function isNumeric(str) {
+function _isn(str) {
     if (typeof str != "string") return false
     return !isNaN(str) && !isNaN(parseFloat(str))
 };
 
-function bindAttribute(_value, _attribute, _id) {
+function _axb(_value, _attribute, _id) {
 
     let _match = _value.match(/{\w\S+?}/gm);
     if(_match !== null) {
@@ -312,5 +314,6 @@ Component.Render = async function(_component = null, _element = "") {
 };
 
 window.hxc = Component;
+window.hxh = Method;
 
-export default Component;
+export default { Component, Method };
