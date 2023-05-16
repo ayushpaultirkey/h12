@@ -7,6 +7,7 @@ class Component {
         this.child = {};
         this.binding = { "@element": {} };
         this.root = null;
+        this.wait = true;
     }
 
     Unique(_unique = "", _object = {}) {
@@ -269,7 +270,8 @@ class Component {
 
     async _init(_element = null, _args = {}) {
         this.root = await this.render();
-        this.init(_args);
+        (this.wait) ? await this.init(_args) : this.init(_args);
+        //this.init(_args);
         if(_element == null) {
             return this.root;
         };
