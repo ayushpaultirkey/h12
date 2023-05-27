@@ -64,11 +64,11 @@ class App extends H12.Component {
     }
     async render() {
 
-        return (
+        return <>
             <div>
                 <Counter args={{ id: "counter-1", number: 5 }} />
             </div>
-        );
+        </>;
 
     }
 }
@@ -92,13 +92,13 @@ class App extends H12.Component {
     }
     async render() {
 
-        return (
+        return <>
             <div>
                 <Counter args={{ id: "counter-1", number: 5 }} />
                 <br />
                 <button onclick="{click}">Reset</button>
             </div>
-        );
+        </>;
 
     }
 }
@@ -122,13 +122,13 @@ class App extends H12.Component {
     }
     async render() {
 
-        return (
+        return <>
             <div>
                 <Counter args={{ id: "counter-1", number: 5 }} />
                 <br />
                 <button onclick="{click}">Reset</button>
             </div>
-        );
+        </>;
 
     }
 }
@@ -152,13 +152,13 @@ class App extends H12.Component {
     }
     async render() {
 
-        return (
+        return <>
             <div>
                 <Counter args={{ id: "counter-1", number: 5 }} />
                 <br />
                 <button onclick="{click}">Reset</button>
             </div>
-        );
+        </>;
 
     }
     click() {

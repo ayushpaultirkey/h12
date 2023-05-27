@@ -48,11 +48,11 @@ class App extends H12.Component {
     }
     async render() {
 
-        return (
+        return <>
             <div>
                 <Counter args />
             </div>
-        );
+        </>;
 
     }
 }

@@ -86,12 +86,12 @@ class Counter extends H12.Component {
 
     }
     render() {
-        return (
+        return <>
             <div>
                 <label>Count: {count}</label>
                 <button>Add</button>
             </div>
-        );
+        </>;
     }
 }
 

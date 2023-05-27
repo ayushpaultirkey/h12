@@ -39,7 +39,7 @@ class App extends H12.Component {
     }
     init() { }
     render() {
-        <>
+        return <>
             <div></div>
         </>
     }
@@ -58,7 +58,7 @@ class App extends H12.Component {
     }
     init() { }
     render() {
-        <>
+        return <>
             <div></div>
         </>
     }
