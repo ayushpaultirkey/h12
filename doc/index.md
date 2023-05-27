@@ -1,0 +1,18 @@
+# Index 📖
+- About
+- Installation
+- Creating & running empty project
+- Component
+    - Syntax
+    - Methods
+    - Property
+    - Tag
+        - Syntax
+        - Attribute
+    - Example
+        - Create counter component
+        - Load component
+        - Assign value & function
+        - Assign property to element
+        - Pass value to other component
+        - Call other component function

@@ -9,8 +9,8 @@ class App extends H12.Component {
     }
     async init() {
         this.Set("{item}", "");
-        this.Set("{add}", this.add);
         this.Set("{visible}", "none");
+        this.Set("{add}", this.add);
         this.Unique("id", this.element);
     }
     async render() {
@@ -29,7 +29,7 @@ class App extends H12.Component {
     }
     async add() {
 
-        const _node = document.getElementById(this.element.box)
+        const _node = this.element.box;
         const _value = (_node !== null) ? _node.value : "";
 
         if(_value !== "") {

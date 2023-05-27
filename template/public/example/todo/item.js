@@ -15,7 +15,7 @@ class Item extends H12.Component {
     async render() {
 
         return <>
-            <div style="background-color: rgb(230, 230, 230); margin-bottom: 6px;">
+            <div style="background-color: rgb(230, 230, 230); margin-bottom: 6px; padding: 6px;">
                 <label style="text-decoration: {done}; font-size: x-large;">{value}</label>
                 <br />
                 <button onclick="{check}">O</button>

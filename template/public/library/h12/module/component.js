@@ -5,24 +5,26 @@ class Component {
         this.id = `c-${crypto.randomUUID()}`;
         this.parent = {};
         this.child = {};
-        this.binding = { "@element": {} };
+        this.binding = { "@e": {} };
         this.root = null;
         this.wait = true;
+        this.args = {};
     }
+
+    async init() { }
+    async render() { return document.createElement("div"); }
 
     Unique(_unique = "", _object = {}) {
 
         let _element = this.root.querySelectorAll(`[${_unique}]`);
         _element.forEach(x => {
             let _id = "x" + Math.random().toString(36).slice(6);
-            _object[x.getAttribute(_unique)] = _id;
+            /*_object[x.getAttribute(_unique)] = _id;*/
+            _object[x.getAttribute(_unique)] = x;
             x.setAttribute(_unique, _id);
         });
 
     }
-
-    async init() { }
-    async render() { return document.createElement("div"); }
 
     async _cx(_node = null, _value = "") {
 
@@ -40,6 +42,7 @@ class Component {
             };
 
             _component.parent[this.id] = this;
+            _component.args = _value;
 
             this.child[_component.id] = _component;
 
@@ -54,10 +57,11 @@ class Component {
     _nx(_node = null, _value = "", _property = {}) {
 
         //
-        let _root;
         let _id = "x" + Math.random().toString(36).slice(6);
-
-        //If text
+        let _root = null;
+        let _unique = false;
+        
+        //
         if(_node === "t") {
 
             if(_value.indexOf("{") == -1) {
@@ -66,8 +70,8 @@ class Component {
             else {
                 _root = document.createElement("span");
                 _root.innerText = _value;
-                _root.classList.add(`${_id}`)
-                this._bind(_value, `.${_id}`, 2);
+                _root.classList.add(_id);
+                this._bx(_value, `.${_id}`, 2);
             };
 
         }
@@ -75,102 +79,87 @@ class Component {
 
             //
             _root = document.createElement(_node);
-            let _unique = false;
-            
+
             //
-            if(_property instanceof Object) {
-                for(const _key in _property) {
-    
-                    //
-                    let _key_value = _property[_key];
+            for(const _key in _property) {
 
-                    //
-                    if(_key_value instanceof Object) {
-                        for(const _vkey in _property[_key]) {
+                let _data = _property[_key];
+                
+                if(_data instanceof Object) {
+                    for(const _dkey in _data) {
 
-                            //
-                            let _name = _vkey;
-                            let _attribute = _key_value[_vkey];
-                            
-                            //
-                            if(isNumeric(_vkey) && _attribute instanceof Array) {
+                        let _attribute = ((_root.hasAttribute(_dkey)) ? _root.getAttribute(_dkey) : "") + _data[_dkey].toString();
 
-                                let _join = ((_attribute.join("").includes(":")) ? ";" : "");
-                                _attribute = _attribute.join(_join) + _join;
-                                _name = _key;
-
-                            };
-
-                            //
-                            _attribute = _attribute.toString();
-                            
-                            //
-                            bindAttribute.bind(this)(_attribute, _name, _id);
-                            
-                            //
-                            if(_attribute.indexOf("{") !== -1) {
-                                _unique = true;
-                            };
-
-                            _root.setAttribute(_name, _attribute);
-
+                        if(_attribute.indexOf("{") !== -1) {
+                            _bax.bind(this)(_attribute, _dkey, _id);
+                            _unique = true;
                         };
-                        continue;
-                    };
 
-                    //
-                    _root.setAttribute(_key, _key_value);
-                    if(_key_value.indexOf("{") !== -1) {
-    
-                        //
-                        _unique = true;
-    
-                        //
-                        bindAttribute.bind(this)(_key_value.toString(), _key, _id);
-    
-                    };
+                        _root.setAttribute(_dkey, _attribute);
 
+                    };
+                    continue;
                 };
+
+                _data = ((_root.hasAttribute(_key)) ? _root.getAttribute(_key) : "") +  _data.toString();
+
+                if(_data.indexOf("{") !== -1) {
+                    _bax.bind(this)(_data, _key, _id);
+                    _unique = true;
+                };
+
+                _root.setAttribute(_key, _data);
+
+            };
+
+            //
+            if(_value instanceof Array) {
+                _value.forEach(x => {
+                    _root.appendChild(x);
+                });
+            }
+            else {
+
+                _root.innerHTML = _value;
+
+                if(_value.indexOf("{") !== -1) {
+                    this._bx.bind(this)(_value, `.${_id}`, 2);
+                    _unique = true;
+                };
+                
             };
 
             //
             if(_unique) {
-                _root.classList.add(`${_id}`);
+                _root.classList.add(_id);
             };
-
-            //
-            _value.forEach(x => {
-                _root.appendChild(x);
-            });
 
         };
 
-        //
         return _root;
 
     }
 
-    _bind(_key, _node, _type, _object = {}) {
+    _bx(_key, _node, _type, _object = {}) {
         if(typeof(this.binding[_key]) == "undefined") {
-            this.binding[_key] = { value: _key, element: [] };
+            this.binding[_key] = { value: _key, e: [] };
         };
-        if(typeof(this.binding["@element"][_node]) == "undefined") {
-            this.binding["@element"][_node] = {};
+        if(typeof(this.binding["@e"][_node]) == "undefined") {
+            this.binding["@e"][_node] = {};
         };
         if(_type == 1) {
-            if(_object.attribute == "class") {
+            if(_object.attr == "class") {
                 _object.data += ` ${_node.replace(/\./g, "")}`;
             };
-            if(typeof(this.binding["@element"][_node][_object.attribute]) == "undefined") {
-                this.binding["@element"][_node][_object.attribute] = {};
-                this.binding["@element"][_node][_object.attribute]["@value"] = _object.data;
-                this.binding["@element"][_node][_object.attribute]["@key"] = [];
+            if(typeof(this.binding["@e"][_node][_object.attr]) == "undefined") {
+                this.binding["@e"][_node][_object.attr] = {};
+                this.binding["@e"][_node][_object.attr]["@value"] = _object.data;
+                this.binding["@e"][_node][_object.attr]["@key"] = [];
             };
-            this.binding["@element"][_node][_object.attribute]["@key"].push(_key);
+            this.binding["@e"][_node][_object.attr]["@key"].push(_key);
             delete _object.data;
         };
-        //this.binding[_key].element.push({ type: _type, node: _node, ... _object });
-        this.binding[_key].element.push({ type: _type, node: _node, ... _object });
+        this.binding[_key].e.push({ type: _type, node: _node, ... _object });
     }
 
     Set(_key = "", _value = "") {
@@ -178,31 +167,29 @@ class Component {
         let _bind = this.binding[_key.replace("++", "")];
         if(typeof(_bind) !== "undefined") {
 
-            let _element = _bind.element;
+            let _element = _bind.e;
             for(var i = 0, ilen = _element.length; i < ilen; i++) {
 
                 const _item = _element[i];
                 if(_item.type == 1) {
 
                     let _node = _item.node;
-                    let _attribute = this.binding["@element"][_node];
-                    let _is_root = this.root.classList.contains(_node.replace(".", ""));
-
-                    if(typeof(_attribute) == "undefined" || typeof(_attribute[_item.attribute]) == "undefined" || this.root.querySelector(_node) == null) {
-                        if(!_is_root) {
-                            continue;
-                        };
+                    let _attribute = this.binding["@e"][_node];
+                    let _element = (this.root.classList.contains(_node.replace(".", ""))) ? this.root : this.root.querySelector(_node);
+                    
+                    if(typeof(_attribute) == "undefined" || typeof(_attribute[_item.attr]) == "undefined" || _element == null) {
+                        continue;
                     };
 
                     //
-                    let _avalue = _attribute[_item.attribute]["@value"];
-                    let _akey = _attribute[_item.attribute]["@key"];
+                    let _avalue = _attribute[_item.attr]["@value"];
+                    let _akey = _attribute[_item.attr]["@key"];
 
                     //
-                    if(typeof(_value) === "function") { 
+                    if(typeof(_value) === "function") {
 
                         const _eid = `e-${crypto.randomUUID()}`;
-                        Method.List[_eid] = { event: _value.bind(this), element: _node[i].selector };
+                        Method.List[_eid] = { event: _value.bind(this), e: _node[i].selector };
                         _value = `hxh.List[\"${_eid}\"].event();`;
 
                     };
@@ -214,17 +201,13 @@ class Component {
                     });
 
                     //
-                    if(_is_root) {
-                        this.root.setAttribute(_item.attribute, _avalue);
-                    }
-                    else {
-                        this.root.querySelector(_node).setAttribute(_item.attribute, _avalue);
-                    };
+                    _element.setAttribute(_item.attr, _avalue);
 
                 }
                 else if(_item.type == 2) {
 
-                    let _node = this.root.querySelector(_item.node);
+                    let _node = (this.root.classList.contains(_item.node.replace(".", ""))) ? this.root : this.root.querySelector(_item.node);
+
                     if(_node == null) {
                         continue;
                     };
@@ -268,24 +251,30 @@ class Component {
         return (typeof(_bind) !== "undefined") ? _bind.value : null;
     }
 
+    Style(_property = {}) {
+        let _string = "";
+        for(var _key in _property) {
+            _string += `${_key}:${_property[_key]};`;
+        };
+        return _string;
+    }
+
     async _init(_element = null, _args = {}) {
-        this.root = await this.render();
+
+        this.root = (typeof(this.warp) === "function") ? await this.warp() : await this.render();
         (this.wait) ? await this.init(_args) : this.init(_args);
-        //this.init(_args);
+        
         if(_element == null) {
             return this.root;
         };
+
         document.querySelector(_element).appendChild(this.root);
     }
 
 }
 
-function isNumeric(str) {
-    if (typeof str != "string") return false
-    return !isNaN(str) && !isNaN(parseFloat(str))
-};
 
-function bindAttribute(_value, _attribute, _id) {
+function _bax(_value, _attribute, _id) {
 
     let _match = _value.match(/{\w\S+?}/gm);
     if(_match !== null) {
@@ -295,7 +284,7 @@ function bindAttribute(_value, _attribute, _id) {
         _match.forEach(x => {
 
             if(!_temp.includes(x)) {
-                this._bind(x, `.${_id}`, 1, { data: _value, attribute: _attribute });
+                this._bx(x, `.${_id}`, 1, { data: _value, attr: _attribute });
                 _temp.push(x);
             };
 
@@ -306,10 +295,10 @@ function bindAttribute(_value, _attribute, _id) {
 };
 
 
-Component.Render = async function(_component = null, _element = "") {
+Component.Render = async function(component = null, args = {}, element = "") {
 
-    const _c = new _component();
-    await _c._init(_element);
+    const _component = new component();
+    await _component._init(element, args);
 
 };
 

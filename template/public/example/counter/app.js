@@ -1,29 +1,25 @@
-import H12 from "./../../library/h12.js";
+import H12 from "../../library/h12.js";
+import Counter from "./counter.js";
 
 @Component
 class App extends H12.Component {
     constructor() {
         super();
     }
-    async init() {
-        this.count = 0;
-        this.Set("{counter}", this.count);
-        this.Set("{add}", this.add);
+    init() {
+        this.Set("{click}", this.click);
     }
     async render() {
-
         return <>
             <div>
-                <label>Count: {counter}</label>
+                <Counter args={{ id: "counter-1", number: 5 }} />
                 <br />
-                <button onclick="{add}">Increase</button>
+                <button onclick="{click}">Reset</button>
             </div>
         </>;
-
     }
-    add() {
-        this.count++;
-        this.Set("{counter}", this.count);
+    click() {
+        this.child["counter-1"].reset();
     }
 }
 

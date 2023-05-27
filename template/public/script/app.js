@@ -4,11 +4,12 @@ import H12 from "./../library/h12.js";
 class App extends H12.Component {
     constructor() {
         super();
-    }
-    async init() {
         
     }
-    async render() {
+    init() {
+
+    }
+    render() {
 
         return <>
             <div>
@@ -18,5 +19,6 @@ class App extends H12.Component {
 
     }
 }
+
 
 H12.Component.Render(<App args />, ".app");
